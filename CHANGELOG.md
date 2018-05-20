@@ -1,3 +1,7 @@
+2.2.1
+-----
+- Removed auto mounting route
+
 2.2.0
 -----
 
