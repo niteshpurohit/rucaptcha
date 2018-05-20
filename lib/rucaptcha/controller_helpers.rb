@@ -3,7 +3,7 @@ module RuCaptcha
     extend ActiveSupport::Concern
 
     included do
-      helper_method :verify_rucaptcha?
+      helper_method :verify_rucaptcha? if respond_to?(:helper_method)
     end
 
     # session key of rucaptcha
@@ -16,8 +16,8 @@ module RuCaptcha
     def generate_rucaptcha
       res = RuCaptcha.generate()
       session_val = {
-        code: res[0],
-        time: Time.now.to_i
+          code: res[0],
+          time: Time.now.to_i
       }
       RuCaptcha.cache.write(rucaptcha_sesion_key_key, session_val, expires_in: RuCaptcha.config.expires_in)
       res[1]
@@ -43,9 +43,7 @@ module RuCaptcha
       RuCaptcha.cache.delete(rucaptcha_sesion_key_key) unless opts[:keep_session]
 
       # Make sure session exist
-      if store_info.blank?
-        return add_rucaptcha_validation_error
-      end
+      return add_rucaptcha_validation_error if store_info.blank?
 
       # Make sure not expire
       if (Time.now.to_i - store_info[:time]) > RuCaptcha.config.expires_in
@@ -54,13 +52,9 @@ module RuCaptcha
 
       # Make sure parama have captcha
       captcha = (params[:_rucaptcha] || '').downcase.strip
-      if captcha.blank?
-        return add_rucaptcha_validation_error
-      end
+      return add_rucaptcha_validation_error if captcha.blank?
 
-      if captcha != store_info[:code]
-        return add_rucaptcha_validation_error
-      end
+      return add_rucaptcha_validation_error if captcha != store_info[:code]
 
       true
     end
